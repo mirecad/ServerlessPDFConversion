@@ -18,7 +18,6 @@ namespace ServerlessPDFConversionDemo
                 configuration.GetSection("pdf").Bind(setttings);
             });
 
-            builder.Services.AddSingleton<AuthenticationService>();
             builder.Services.AddSingleton<FileService>();
         }
     }
