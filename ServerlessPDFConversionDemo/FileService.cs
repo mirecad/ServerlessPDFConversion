@@ -5,29 +5,24 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Microsoft.Identity.Client;
 using Mirecad.Toolbox.Http;
 
 namespace ServerlessPDFConversionDemo
 {
     public class FileService : IDisposable
     {
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
 
         public FileService(IOptions<AuthenticationOptions> options)
         {
-            var app = ConfidentialClientApplicationBuilder.Create(options.Value.ClientId)
-                .WithClientSecret(options.Value.ClientSecret)
-                .WithAuthority(options.Value.Authority)
-                .Build();
-            var handler = new AzureAdAppMessageHandler(app, options.Value.Resource);
+            var handler = new AzureAdAppMessageHandler(options.Value.Resource);
             _httpClient = new HttpClient(handler);
         }
 
         public async Task<string> UploadStreamAsync(string path, Stream content, string contentType)
         {
-            string tmpFileName = $"{Guid.NewGuid().ToString()}.{MimeTypes.MimeTypeMap.GetExtension(contentType)}";
-            string requestUrl = $"{path}root:/{tmpFileName}:/content";
+            var tmpFileName = $"{Guid.NewGuid()}.{MimeTypes.MimeTypeMap.GetExtension(contentType)}";
+            var requestUrl = $"{path}root:/{tmpFileName}:/content";
             var requestContent = new StreamContent(content);
             requestContent.Headers.ContentType = new MediaTypeHeaderValue(contentType);
             var response = await _httpClient.PutAsync(requestUrl, requestContent);
